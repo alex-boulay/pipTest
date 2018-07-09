@@ -2,7 +2,7 @@
 
 rm -f testlog.txt
 
-(qemu-system-x86 -kernel build/x86_multiboot/meso.bin -serial stdio -m 1024 -nodisplay -net nic,model=rtl8139 -net dump,file=./netdump.pcap -net user -cpu Westmere --extra-cflags='-Wno-error=deprecated-declarations' PARTITION=pipTest partition kernel > testlog.txt) & pid=$!
+(qemu-system-i386 -kernel build/x86_multiboot/meso.bin -serial stdio -m 1024 -nodisplay -net nic,model=rtl8139 -net dump,file=./netdump.pcap -net user -cpu Westmere --extra-cflags='-Wno-error=deprecated-declarations' PARTITION=pipTest partition kernel > testlog.txt) & pid=$!
 
 
 return_code=1
