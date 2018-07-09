@@ -20,7 +20,8 @@ clean:
 
 $(EXEC): $(ASOBJ) $(COBJ)
 	$(LD) $^ -o $@ $(LDFLAGS)
-	cp $(EXEC) ../images/.
+	mkdir ../images
+	cp $(EXEC) ../images/
 
 %.o: %.s
 	$(AS) $(ASFLAGS) $< -o $@

@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 rm -f testlog.txt
 make PARTITION=pipTest partition kernel 
