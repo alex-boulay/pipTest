@@ -33,8 +33,8 @@
 
 include ../toolchain.mk
 
-ASFLAGS=-m32 -c -I. -I./include --freestanding -O0 -nostdlib -fno-stack-protector -fno-pic -no-pie -I/home/boulay/Documents/pipcore/build/x86_multiboot/ -I/home/boulay/Documents/pipcore/src/MAL
-CFLAGS=-m32 -c -I. -I./include --freestanding -O0 -nostdlib -fno-stack-protector -fno-pic -no-pie -I/home/boulay/Documents/pipcore/build/x86_multiboot/ -I/home/boulay/Documents/pipcore/src/MAL
+ASFLAGS=-m32 -c -I. -I./include --freestanding -O0 -nostdlib -fno-stack-protector -fno-pic -fno-pie -I/home/boulay/Documents/pipcore/build/x86_multiboot/ -I/home/boulay/Documents/pipcore/src/MAL
+CFLAGS=-m32 -c -I. -I./include --freestanding -O0 -nostdlib -fno-stack-protector -fno-pic -fno-pie -I/home/boulay/Documents/pipcore/build/x86_multiboot/ -I/home/boulay/Documents/pipcore/src/MAL
 LDFLAGS=-L$(LIBPIP)/lib -melf_i386 -Tlink.ld -lpip
 LDFLAGS2=-L$(LIBPIP)/lib -melf_i386 -Tlinkelf.ld -lpip
 # Include Libpip
