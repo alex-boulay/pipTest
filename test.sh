@@ -2,7 +2,7 @@
 
 rm -f testlog.txt
 
-( make qemu > testlog.txt) & pid=$!
+( make qemu --extra-cflags='-Wno-error=deprecated-declarations' > testlog.txt) & pid=$!
 
 
 return_code=1
