@@ -1,6 +1,6 @@
 include ../../toolchain.mk
 
-CFLAGS=-m32 -c -nostdlib --freestanding -I$(LIBPIP)/include/ -I$(LIBPIP)/arch/x86/include/ -fno-stack-protector -fno-pic -no-pie
+CFLAGS=-m32 -c -nostdlib --freestanding -I$(LIBPIP)/include/ -I$(LIBPIP)/arch/x86/include/ -fno-stack-protector -fno-pic -fno-pie
 ASFLAGS=$(CFLAGS)
 LDFLAGS=-L$(LIBPIP)/lib -melf_i386 -Tlink.ld -lpip
 
