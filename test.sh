@@ -10,7 +10,8 @@ while [ $return_code -ne 0 ]
 do
 grep -q "#AT#TOKEN" testlog.txt
 return_code=$?
-sleep 1
+sleep 5
+cat testlog.txt
 done
 
 kill -9 $pid
