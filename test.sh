@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rm -f testlog.txt
-
+make PARTITION=pipTest partition kernel 
 (qemu-system-i386 -kernel build/x86_multiboot/meso.bin -serial stdio -m 1024 -nographic > testlog.txt) & pid=$!
 
 
