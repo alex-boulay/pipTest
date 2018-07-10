@@ -7,6 +7,9 @@ make PARTITION=pipTest partition kernel
 (qemu-system-i386 -kernel build/x86_multiboot/meso.bin -serial stdio -m 1024 -nographic > testlog.txt) & pid=$!
 
 
+
+#tail -f testlog.txt | while read a ; do echo a=$a; grep "#AT#TOKEN0" <<< $a && echo done ;
+
 variable=1
 while [ $variable -ne 0 ]
 do
@@ -15,6 +18,7 @@ variable=$?
 sleep 5
 # cat testlog.txt
 done
+
 
 kill -9 $pid
 pkill -n  -9 qemu
@@ -31,3 +35,4 @@ fi
 cat testlog.txt
 echo $CAR "Tests Failed, see testlogs.txt for more information" | cut -d'N' -f 2
 exit 1
+
