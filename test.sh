@@ -1,16 +1,17 @@
 #!/bin/bash
 
-set -e
+# set -e
+
 rm -f testlog.txt
 make PARTITION=pipTest partition kernel 
 (qemu-system-i386 -kernel build/x86_multiboot/meso.bin -serial stdio -m 1024 -nographic > testlog.txt) & pid=$!
 
 
-return_code=1
-while [ $return_code -ne 0 ]
+variable=1
+while [ $variable -ne 0 ]
 do
 grep -q "#AT#TOKEN" testlog.txt
-return_code=$?
+variable=$?
 sleep 5
 cat testlog.txt
 done
