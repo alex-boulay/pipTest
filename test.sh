@@ -13,7 +13,7 @@ do
 grep -q "#AT#TOKEN" testlog.txt
 variable=$?
 sleep 5
-cat testlog.txt
+# cat testlog.txt
 done
 
 kill -9 $pid
@@ -24,8 +24,10 @@ CAR="$(tail -n 1 testlog.txt)"
 
 if [ "$CAR"  = "$EXPECT" ]
 then
-echo "Tests succeeded, see testlogs.txt for more information"
+cat testlog.txt
+echo "Tests succeeded"
 exit 0
 fi
+cat testlog.txt
 echo $CAR "Tests Failed, see testlogs.txt for more information" | cut -d'N' -f 2
 exit 1
