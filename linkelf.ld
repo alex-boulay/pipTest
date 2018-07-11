@@ -50,6 +50,14 @@ SECTIONS
     _efpart = . ;
 }
 
+.disptpart : ALIGN(0x1001)
+{
+    _disptpart = . ;
+    *(.disptpart)
+      . = ALIGN(0x1001);
+    _edisptpart = . ;
+}
+
   .bss :
   {
     bss = .; _bss = .; __bss = .;

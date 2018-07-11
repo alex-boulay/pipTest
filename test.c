@@ -109,6 +109,7 @@ int testOnPages(uint32_t part,uint32_t area){
 */
 int addVAddrTest(uint32_t part){
 	log1("addVAddr Test Start",-1);
+  log1("N",-1);
   /*
 	uint32_t deathstar;
 	for(deathstar=0x70C000;deathstar<=0x3F3D9000;deathstar+=0x1000){

@@ -16,7 +16,7 @@ all: $(EXEC)
 	@echo Done.
 
 clean:
-	rm -fv $(ASOBJ) $(COBJ) $(EXEC)
+	-rm -fv $(ASOBJ) $(COBJ) $(EXEC)
 
 $(EXEC): $(ASOBJ) $(COBJ)
 	$(LD) $^ -o $@ $(LDFLAGS)

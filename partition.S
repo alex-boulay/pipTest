@@ -33,3 +33,6 @@
 
 .section .fpart
 .incbin "images/fpart.bin"
+
+.section .disptpart
+.incbin "images/disptpart.bin"

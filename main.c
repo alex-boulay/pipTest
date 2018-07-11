@@ -7,20 +7,24 @@
 #include <pip/debug.h>
 #include "test.h"
 
-#define BUFFSIZE 20
+#define BUFFSIZE 30
 extern void* _fpart, *_efpart;
-extern void* _spart, *_espart;
+extern void* _disptpart, *_edisptpart;
 
 int atests=0;/* number of achieved tests */
 int tests=0; /*number of tests */
 int used;
-int length,offset;
+int length,lengthd,offset;
 uint32_t BTVS[BUFFSIZE]; /* Buffer the vampire slayer : here to allocate memmory*/
 volatile int currchild; /*tells if there is a child alive */
 
 static const struct {uint32_t start, end;} fpart = {
 	(uint32_t)&_fpart, (uint32_t)&_efpart,
 };
+static const struct {uint32_t start, end;} disptpart = {
+	(uint32_t)&_disptpart, (uint32_t)&_edisptpart,
+};
+
 
 void AllocAll(){
 	used=0;
@@ -188,7 +192,6 @@ int main(pip_fpinfo* bootinfo){
 			putc('\n');
 		}
 	}
-
 	puts("Mapping interrupt stack... ");
 	uint32_t istack_addr = (uint32_t)allocPage();
 	if(mapPageWrapper((uint32_t)istack_addr, (uint32_t)BTVS[0], (uint32_t)0x804000))
@@ -224,7 +227,7 @@ int main(pip_fpinfo* bootinfo){
 	/*Pip_VCLI();*/
 
 	testOnPages(BTVS[0],0x10000000);
-	addVAddrTest(BTVS[0]);
+	//addVAddrTest(BTVS[0]);
   Pip_Notify((uint32_t)BTVS[0],0,0,0);
 	log1("tests #0",-1);
 	log1("trying to resume deleted child ",-1);
@@ -232,11 +235,29 @@ int main(pip_fpinfo* bootinfo){
 
 	/*Test on Dispatch */
 	log1("testing Dipatch ",-1);
-	if (createPartition(BTVS[13],BTVS[14],BTVS[15],BTVS[16],BTVS[17])){
+	if (createPartition(BTVS[20],BTVS[21],BTVS[22],BTVS[23],BTVS[24])){
 		log1("Created part on Dispatch",-1);
 	}
 	else{
 		log1("Couldn't create the dispatch testPart",-1);
+	}
+	lengthd= disptpart.end-disptpart.start;
+
+	puthex(lengthd);
+	puts("\n");
+	for(offset = 0; offset < lengthd; offset+=0x1000){
+		if (mapPageWrapper((uint32_t)(disptpart.start+ offset), BTVS[20],(uint32_t)(0x700000+offset))){
+			log1("Failed to map disptpart ",-1);
+			puthex(disptpart.start + offset);
+			puts(" to destination ");
+			puthex(0x700000+ offset);
+			puts("\n");
+		}
+		else{
+			log1("mapped",-2);
+			puthex((uint32_t)(disptpart.start+ offset));
+			putc('\n');
+		}
 	}
 
 	dispatch(BTVS[13],0,0,0);

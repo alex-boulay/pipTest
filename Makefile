@@ -56,14 +56,15 @@ all: dep $(EXEC)
 	@echo Done.
 
 clean:
-	rm -fv $(ASOBJ) $(COBJ) $(EXEC) linux.map $(EXEC).elf images/fpart.bin
+	-rm -fv $(ASOBJ) $(COBJ) $(EXEC) linux.map $(EXEC).elf images/*
 
 $(EXEC): $(ASOBJ) $(COBJ)
 	$(LD)  $^ -o $@ $(LDFLAGS) -Map linux.map
 	$(LD)  $^ -o $@.elf $(LDFLAGS2) -Map linux.map
 
 dep:
-	make -C fpart clean all
+	-make -C fpart clean all
+	-make -C disptpart clean all
 
 %.o: %.S
 	$(AS) $(ASFLAGS) $< -o $@
