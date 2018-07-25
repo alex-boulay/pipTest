@@ -11,8 +11,11 @@
 extern void* _fpart, *_efpart;
 extern void* _disptpart, *_edisptpart;
 
+
+
 int atests=0;/* number of achieved tests */
 int tests=0; /*number of tests */
+uint32_t *tpage, *atpage;
 int used;
 int length,lengthd,offset;
 uint32_t BTVS[BUFFSIZE]; /* Buffer the vampire slayer : here to allocate memmory*/
@@ -44,12 +47,42 @@ INTERRUPT_HANDLER(timerAsm,timerHandler)
 }
 
 /*
+*
+*
+*
+*/
+INTERRUPT_HANDLER(PfaultAsm,PfaultHandler)
+puts("Got page fault from ");
+puthex(caller);
+putc('\n');
+puts("data1 ");
+puthex(data1);
+putc('\n');
+puts("data 2 ");
+puthex(data2);
+putc('\n');
+
+
+
+
+END_OF_INTERRUPT
+
+
+/*
 * The interruption triggering the Handler have to come from the child
 * this interrupt allow me to test the deleting of Partitions
 * atm i'm testing to delete one existing part, the same part but already deleted
 * and a last part which never existed
 */
 INTERRUPT_HANDLER(takebackAsm,takebackHandler)
+	/* getting back pages with tests info */
+	log1("Recovering page with testsinfo from Child ",-1);
+	if(!Pip_RemoveVAddr(BTVS[0],0x73C000)){
+		log1("Couldn't recover test counter memory from Child",-1);
+		//PANIC();
+	}
+
+
 	tests++;
 	if(deletePartition(BTVS[0])){
 		log1("Deleting Part : 0",1);
@@ -122,11 +155,17 @@ int main(pip_fpinfo* bootinfo){
 	parse_bootinfo(bootinfo);
 
 	log1("Initializing paging.\n",-1);
-  if(bootinfo->magic==FPINFO_MAGIC)
-	   initPaging((void*)bootinfo->membegin, (void*)bootinfo->memend);
+  if(bootinfo->magic==FPINFO_MAGIC){
+	   initPaging((void*)(bootinfo->memend-0x200000), (void*)bootinfo->memend);
+		 puts("Paging start at : ");
+		 puthex(bootinfo->memend-0x200000);
+		 puts(" - ends at : ");
+		 puthex(bootinfo->memend);
+		 putc('\n');
+	}
   else{
     puts("Boot init Error ");
-    PANIC();
+    //PANIC();
   }
 	AllocAll();
 
@@ -140,16 +179,11 @@ int main(pip_fpinfo* bootinfo){
   else
     log1("Partition created :",0);
 
-	puthex(BTVS[0]);
-	puts("\n");
-	puthex(BTVS[1]);
-	puts("\n");
-	puthex(BTVS[2]);
-	puts("\n");
-	puthex(BTVS[3]);
-	puts("\n");
-	puthex(BTVS[4]);
-	puts("\n");
+	puthex(BTVS[0]);puts("\n");
+	puthex(BTVS[1]);puts("\n");
+	puthex(BTVS[2]);puts("\n");
+	puthex(BTVS[3]);puts("\n");
+	puthex(BTVS[4]);puts("\n");
 
 	log1("Creating Test Partitions : ",-1);
 	log1("PART 1",-1);
@@ -173,6 +207,7 @@ int main(pip_fpinfo* bootinfo){
 	log1("Initializing interrupts... ",-1);
 	Pip_RegisterInterrupt(33, &timerAsm,(uint32_t *) 0x2000000);
 	Pip_RegisterInterrupt(88, &takebackAsm,(uint32_t *) 0x2001000);
+	Pip_RegisterInterrupt(15, &PfaultAsm,(uint32_t *) 0x2002000);
 	puts("Mapping partition ");
 	length= fpart.end-fpart.start;
 
@@ -194,7 +229,7 @@ int main(pip_fpinfo* bootinfo){
 	}
 	puts("Mapping interrupt stack... ");
 	uint32_t istack_addr = (uint32_t)allocPage();
-	if(mapPageWrapper((uint32_t)istack_addr, (uint32_t)BTVS[0], (uint32_t)0x804000))
+	if(mapPageWrapper((uint32_t)istack_addr, (uint32_t)BTVS[0], (uint32_t)0xC00000))
 	{
 		puts("Couldn't map stack.\n");
 	} else {
@@ -223,18 +258,75 @@ int main(pip_fpinfo* bootinfo){
 	} else {
 		puts("vidt done.\n");
 	}
-	multiWrapp((uint32_t *) &BTVS[13],5,BTVS[0],(uint32_t)0xA0000000);
+
+
+
+	log1("addVAddr Test Start",-1);
+	MultAddrTest(BTVS[0]);
+
+	log1("Next tests are on the writing rigths of a Vaddr addresses are send Now but will be tested later",-1);
+	log1("\t -Send an address to the child with the writing rigths",-1);
+	if(Pip_AddVAddr((uint32_t) allocPage(),BTVS[0],0x73A000,1,1,1)){
+		log1("Succeded to send address",-1);
+	}
+	else {
+		log1("FAILED TO SEND ADDRESS TO CHILD AT :",-1);puthex(0x730000);
+	}
+	log1("\t -Send an address to the child without writing rigths",-1);
+	if(Pip_AddVAddr((uint32_t)allocPage(),BTVS[0],0x73B000,1,0,1)){
+		log1("Succeded to send address",-1);
+	}
+	else {
+		log1("FAILED TO SEND ADDRESS TO CHILD AT :",-1);puthex(0x73B000);
+	}
+	tests++;
+	/* Test on wrong child */
+	puts("Next test could be improuved by Searching all kernel/binary addresses with the multAddrTest \n");
+	if(!Pip_AddVAddr((uint32_t)allocPage(),BTVS[1],0xA00000,1,1,1)){
+		log1("Couldn't give an address to a false child ",1);
+		atests++;
+	}
+	else{
+		log1("Malfunctionous address achived to be transmited to son ",0);
+	}
+
+	/*
+	tests++;
+
+	already tried to give memory from kernel to child in multaddrTest
+
+	if(!Pip_AddVAddr(0x0,BTVS[0],0xA00000,1,1,1)){
+		log1("Couldn't transmit Kernel address to child partition ",0);
+		atests++;
+	}
+	else{
+		log1("Was abble to transmit address to child partition ",1);
+	}*/
+
+	//if(!Pip_AddVAddr())
 	/*Pip_VCLI();*/
 
+	/* Test on addVAddr */
 	testOnPages(BTVS[0],0x10000000);
-	//addVAddrTest(BTVS[0]);
+
+	/* Page to transfer to parts to increment Test and Atest outside rootpart */
+	tpage = Pip_AllocPage();
+	atpage = tpage+1;
+	*tpage=0x0;
+	*atpage=0x0;
+	if(!Pip_AddVAddr((unsigned long)tpage,BTVS[0],0x73C000,1,1,1)){
+		log1("No deadbeef tonigth ",1);
+		PANIC();
+	}
+	/* Test on notify resume on an already deleted part */
   Pip_Notify((uint32_t)BTVS[0],0,0,0);
+
 	log1("tests #0",-1);
-	log1("trying to resume deleted child ",-1);
+	log1("trying to resume deleted child (Expected to WARNING_IAL in the next line)",-1);
 	Pip_Resume(BTVS[0],1);
 
 	/*Test on Dispatch */
-	log1("testing Dipatch ",-1);
+	log1("Dispatch/Resume Test partition.",-1);
 	if (createPartition(BTVS[20],BTVS[21],BTVS[22],BTVS[23],BTVS[24])){
 		log1("Created part on Dispatch",-1);
 	}
@@ -243,6 +335,7 @@ int main(pip_fpinfo* bootinfo){
 	}
 	lengthd= disptpart.end-disptpart.start;
 
+	log1("Size of Disptpart : ",-2);
 	puthex(lengthd);
 	puts("\n");
 	for(offset = 0; offset < lengthd; offset+=0x1000){
@@ -259,12 +352,25 @@ int main(pip_fpinfo* bootinfo){
 			putc('\n');
 		}
 	}
+	if(mapPageWrapper((uint32_t)vidt,BTVS[20],(uint32_t)0xFFFFF000))
+	{
+		log1("Couldn't map VIDT.\n",-1);
+	} else {
+		puts("vidt done.\n");
+	}
 
 	dispatch(BTVS[13],0,0,0);
 	log1("end of tests on dispatch",-1);
 
-	/* Time to test Count/prepare/collect */
-	puts(" v0.01\n");
+
+
+	//puthex(*tpage);putc('\n');
+	//puthex(*atpage);putc('\n');
+	tests+= *tpage;
+	atests+= *atpage;
+
+
+	puts(" v0.02\n");
 	log1("Achevied ",-2);
 	putdec(atests);
 	puts(" of ");

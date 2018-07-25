@@ -17,6 +17,7 @@ all: $(EXEC)
 
 clean:
 	-rm -fv $(ASOBJ) $(COBJ) $(EXEC)
+	-rm ../images/fpart.bin
 
 $(EXEC): $(ASOBJ) $(COBJ)
 	$(LD) $^ -o $@ $(LDFLAGS)

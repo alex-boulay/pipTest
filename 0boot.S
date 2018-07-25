@@ -16,3 +16,4 @@ loop:
 
 INTERRUPT_HANDLER(timerAsm,timerHandler)
 INTERRUPT_HANDLER(takebackAsm,takebackHandler)
+INTERRUPT_HANDLER(PfaultAsm,PfaultHandler)
